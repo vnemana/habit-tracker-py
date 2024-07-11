@@ -1,0 +1,5 @@
+import os
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.getenv('HABITS_POSTGRES_URI')
+    SQLALCHEMY_TRACK_NOTIFICATIONS = False
