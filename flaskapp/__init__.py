@@ -1,8 +1,8 @@
 from flask import Flask
-from .config import Config
+from .config import DevelopmentConfig, TestingConfig
 from .db import db, migrate
 
-def create_app(config_class=Config):
+def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
@@ -13,8 +13,11 @@ def create_app(config_class=Config):
     # Register blueprints or import views here
     from .models import User, Habit
 
-    @app.route('/')
-    def home():
-        return "Hello, Flask with PostgreSQL!"
+    # Import and register blueprints
+    from .routes.user_routes import user_bp
+    from .routes.habit_routes import habit_bp
+
+    app.register_blueprint(user_bp)
+    app.register_blueprint(habit_bp)
 
     return app

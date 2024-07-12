@@ -24,7 +24,7 @@ class Habit(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     name = db.Column(db.String(80), nullable=False)
-    frequency = db.Column(frequency_enum, nullable=False)
+    frequency = db.Column(db.String(50), nullable=False)
     time_of_day = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
     def __repr__(self):
