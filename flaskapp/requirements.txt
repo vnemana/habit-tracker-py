@@ -1,0 +1,4 @@
+Flask
+Flask-SQLAlchemy
+psycopg2-binary  # If using PostgreSQL
+Flask-Migrate
