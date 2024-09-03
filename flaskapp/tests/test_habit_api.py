@@ -1,5 +1,6 @@
 import unittest
 import json
+
 from flaskapp import db
 from flaskapp.models import User, Habit
 from tests.base import BaseTestCase
@@ -9,16 +10,18 @@ class HabitApiTestCase(BaseTestCase):
         super().setUp()
         self.client = self.app.test_client()
         # Create a user for testing
-        self.user = User(username='testuser', password='password')
+        self.user = User(name='John Doe', email='john@example.com', auth_provider='google', provider_id='google123')
         db.session.add(self.user)
         db.session.commit()
 
     def test_create_habit(self):
+        """Test Create habit from api."""
         response = self.client.post('/habits', data=json.dumps({
             'user_id': self.user.id,
             'name': 'Exercise',
             'frequency': 'Daily',
-            'time_of_day': None
+            'start_date': '2024-08-29',
+            'time_of_day': '08:00:00'
         }), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
@@ -30,51 +33,50 @@ class HabitApiTestCase(BaseTestCase):
         self.assertEqual(queried_habit.name, 'Exercise')
 
     def test_get_habits(self):
-        habit = Habit(user_id=self.user.id, name='Exercise', frequency='Daily', time_of_day=None)
+        habit = Habit(user_id=self.user.id, name='Exercise', frequency='Daily', time_of_day='08:00:00', start_date='2024-08-20')
         db.session.add(habit)
+        habit2 = Habit(user_id=self.user.id, name='Reading', frequency='Daily', time_of_day='09:00:00', start_date='2024-08-20')
+        db.session.add(habit2)
         db.session.commit()
         
         response = self.client.get('/habits')
         self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(2, len(data['habits']))
         self.assertIn('Exercise', str(response.data))
+        self.assertIn('08:00:00', str(response.data))
+        self.assertIn('Reading', str(response.data))
+        self.assertIn('09:00:00', str(response.data))
 
     def test_get_habit(self):
-        self.client.post('/habits', json={
-            'user_id': 1,
-            'name': 'Test Habit',
-            'frequency': 'Daily',
-            'time_of_day': '2024-07-10T08:00:00'
-        })
-        response = self.client.get('/habits/1')
+        habit = Habit(user_id=self.user.id, name='Exercise', frequency='Daily', time_of_day='08:00:00', start_date='2024-08-20')
+        db.session.add(habit)
+        db.session.commit()
+
+        response = self.client.get(f'/habits/{habit.id}')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Test Habit', str(response.data))
+        self.assertIn('Exercise', str(response.data))
 
     def test_update_habit(self):
-        self.client.post('/habits', json={
-            'user_id': 1,
-            'name': 'Test Habit',
-            'frequency': 'Daily',
-            'time_of_day': '2024-07-10T08:00:00'
-        })
-        response = self.client.put('/habits/1', json={
-            'user_id': 1,
+        habit = Habit(user_id=self.user.id, name='Exercise', frequency='Daily', time_of_day='08:00:00', start_date='2024-08-20')
+        db.session.add(habit)
+        db.session.commit()
+        response = self.client.put(f'/habits/{habit.id}', json={
             'name': 'Updated Habit',
             'frequency': 'Weekly',
-            'time_of_day': '2024-07-10T08:00:00'
+            'time_of_day': '08:00:00'
         })
         self.assertEqual(response.status_code, 200)
         self.assertIn('Updated Habit', str(response.data))
+        self.assertIn('Weekly', str(response.data))
 
     def test_delete_habit(self):
-        self.client.post('/habits', json={
-            'user_id': 1,
-            'name': 'Test Habit',
-            'frequency': 'Daily',
-            'time_of_day': '2024-07-10T08:00:00'
-        })
-        response = self.client.delete('/habits/1')
+        habit = Habit(user_id=self.user.id, name='Exercise', frequency='Daily', time_of_day='08:00:00', start_date='2024-08-20')
+        db.session.add(habit)
+        db.session.commit()
+        response = self.client.delete(f'/habits/{habit.id}')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Habit deleted', str(response.data))
+        self.assertIn(f'Habit - {habit.name} - deleted', str(response.data))
 
 
 if __name__ == '__main__':

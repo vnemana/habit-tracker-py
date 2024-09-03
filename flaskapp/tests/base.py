@@ -5,6 +5,7 @@ from flaskapp.config import TestingConfig
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
+        """Set up test database and test client."""
         self.app = create_app(config_class=TestingConfig)
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
