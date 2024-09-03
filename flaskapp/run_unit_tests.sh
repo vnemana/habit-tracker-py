@@ -2,12 +2,12 @@
 
 . .venv/bin/activate
 
+export PYTHONPATH=$PWD/../
+
 pip3 install --require-virtualenv -q -r requirements.txt
 
 docker compose up -d
 
-export PYTHONPATH=$PWD/../
-
-python3 -m unittest discover -s tests
+python3 -m unittest tests/test_habit*.py -v
 
 docker compose down
